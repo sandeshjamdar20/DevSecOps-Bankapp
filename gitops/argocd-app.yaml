@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Amitabh-DevOps/DevSecOps-Bankapp.git
+    repoURL: https://github.com/sandeshjamdar20/DevSecOps-Bankapp.git
     targetRevision: main
     path: charts/bankapp
     helm:
