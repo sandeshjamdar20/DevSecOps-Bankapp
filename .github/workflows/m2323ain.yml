@@ -1,0 +1,34 @@
+name: CD - GitOps Sync
+  
+on:
+  workflow_call:
+
+jobs:
+  # ============================================================
+  # GATE 8: GITOPS UPDATE
+  # ============================================================
+  gitops-update:
+    name: Update Helm Values for ArgoCD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # contents: write permission is set above — no PAT needed
+
+      - name: Update Image Tag in Helm values.yaml
+        run: |
+          sed -i 's/tag: .*/tag: "${{ github.sha }}"/' charts/bankapp/values.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add charts/bankapp/values.yaml
+          git commit -m "chore: update image tag to ${{ github.sha }} [skip ci]"
+          git push
+
+  # ============================================================
+  # GATE 9: ARGOCD SYNC (Optional, ArgoCD can auto-sync)
+  # ============================================================
+  # Note: ArgoCD is configured to auto-sync in its manifest
