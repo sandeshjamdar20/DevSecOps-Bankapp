@@ -1,0 +1,39 @@
+name: DevSecOps Main Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'screenshots/**'
+      - 'scripts/**'
+
+permissions:
+  contents: write  # Required: cd.yml pushes updated values.yaml back to repo (workflow_call inherits this)
+  security-events: write
+
+jobs:
+  # ============================================================
+  # STAGE 1: CI - Security Scanning (SAST + SCA)
+  # ============================================================
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # ============================================================
+  # STAGE 2: Build - Maven + Trivy + Docker Hub Push
+  # ============================================================
+  build:
+    needs: ci
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
+  # ============================================================
+  # STAGE 3: CD - GitOps Sync (ArgoCD)
+  # ============================================================
+  cd:
+    needs: build
+    uses: ./.github/workflows/cd.yml
+    secrets: inherit
